@@ -1,13 +1,13 @@
-function bCrypt() {
-	this.GENSALT_DEFAULT_LOG2_ROUNDS = 10;
-	this.BCRYPT_SALT_LEN = 16;
-	this.BLOWFISH_NUM_ROUNDS = 16;
-	this.MAX_EXECUTION_TIME = 100;
-	this.P_orig = [0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822,
+window['bCrypt'] = function() {
+	this.P = [];
+	this.S = [];
+}
+window['bCrypt'].prototype = {
+	P_orig: [ 0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822,
 			0x299f31d0, 0x082efa98, 0xec4e6c89, 0x452821e6, 0x38d01377,
 			0xbe5466cf, 0x34e90c6c, 0xc0ac29b7, 0xc97c50dd, 0x3f84d5b5,
-			0xb5470917, 0x9216d5d9, 0x8979fb1b];
-	this.S_orig = [0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7, 0xb8e1afed,
+			0xb5470917, 0x9216d5d9, 0x8979fb1b ],
+	S_orig: [ 0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7, 0xb8e1afed,
 			0x6a267e96, 0xba7c9045, 0xf12c7f99, 0x24a19947, 0xb3916cf7,
 			0x0801f2e2, 0x858efc16, 0x636920d8, 0x71574e69, 0xa458fea3,
 			0xf4933d7e, 0x0d95748f, 0x728eb658, 0x718bcd58, 0x82154aee,
@@ -211,42 +211,17 @@ function bCrypt() {
 			0xf746ce76, 0x77afa1c5, 0x20756060, 0x85cbfe4e, 0x8ae88dd8,
 			0x7aaaf9b0, 0x4cf9aa7e, 0x1948c25c, 0x02fb8a8c, 0x01c36ae4,
 			0xd6ebe1f9, 0x90d4f869, 0xa65cdea0, 0x3f09252d, 0xc208e69f,
-			0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6];
-	this.bf_crypt_ciphertext = [0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253,
-			0x63727944, 0x6f756274];
-	this.base64_code = ['.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+			0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6 ],
+	base64_code: [ '.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
 			'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
 			'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
 			'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
 			'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8',
-			'9'];
-	this.index_64 = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1,
-			54, 55, 56, 57, 58, 59, 60, 61, 62, 63, -1, -1, -1, -1, -1, -1, -1,
-			2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-			21, 22, 23, 24, 25, 26, 27, -1, -1, -1, -1, -1, -1, 28, 29, 30, 31,
-			32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
-			49, 50, 51, 52, 53, -1, -1, -1, -1, -1];
-	this.P;
-	this.S;
-	this.lr;
-	this.offp;
-};
-bCrypt.prototype.getByte = function(c) {
-	var ret = 0;
-	try {
-		var b = c.charCodeAt(0);
-	} catch (err) {
-		b = c;
-	}
-	if (b > 127) {
-		return -128 + (b % 128);
-	} else {
-		return b;
-	}
-};
-bCrypt.prototype.encode_base64 = function(d, len) {
+			'9' ],
+
+	bf_crypt_ciphertext: [0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253,	0x63727944, 0x6f756274],
+
+	encode_base64: function(d, len) {
 	var off = 0;
 	var rs = [];
 	var c1;
@@ -275,82 +250,46 @@ bCrypt.prototype.encode_base64 = function(d, len) {
 		rs.push(this.base64_code[c2 & 0x3f]);
 	}
 	return rs.join('');
-};
-bCrypt.prototype.char64 = function(x) {
-	var code = x.charCodeAt(0);
-	if (code < 0 || code > this.index_64.length) {
-		return -1;
+},
+	stringToBytes: function(str) {
+	var ch, st, re = [];
+	for ( var i = 0; i < str.length; i++) {
+		ch = str.charCodeAt(i);
+		st = [];
+		do {
+			st.push(ch & 0xFF);
+			ch = ch >> 8;
+		} while (ch);
+		re = re.concat(st.reverse());
 	}
-	return this.index_64[code];
-};
-bCrypt.prototype.decode_base64 = function(s, maxolen) {
-	var off = 0;
-	var slen = s.length;
-	var olen = 0;
-	var rs = [];
-	var c1, c2, c3, c4, o;
-	if (maxolen <= 0)
-		throw "Invalid maxolen";
-	while (off < slen - 1 && olen < maxolen) {
-		c1 = this.char64(s.charAt(off++));
-		c2 = this.char64(s.charAt(off++));
-		if (c1 == -1 || c2 == -1) {
-			break;
-		}
-		o = this.getByte(c1 << 2);
-		o |= (c2 & 0x30) >> 4;
-		rs.push(String.fromCharCode(o));
-		if (++olen >= maxolen || off >= slen) {
-			break;
-		}
-		c3 = this.char64(s.charAt(off++));
-		if (c3 == -1) {
-			break;
-		}
-		o = this.getByte((c2 & 0x0f) << 4);
-		o |= (c3 & 0x3c) >> 2;
-		rs.push(String.fromCharCode(o));
-		if (++olen >= maxolen || off >= slen) {
-			break;
-		}
-		c4 = this.char64(s.charAt(off++));
-		o = this.getByte((c3 & 0x03) << 6);
-		o |= c4;
-		rs.push(String.fromCharCode(o));
-		++olen;
-	}
-	var ret = [];
-	for (off = 0; off < olen; off++) {
-		ret.push(this.getByte(rs[off]));
-	}
-	return ret;
-};
-bCrypt.prototype.encipher = function(lr, off) {
-	var i;
-	var n;
-	var l = lr[off];
+	return re;
+},
+encipher: function(lr, off) {
+	var j = 0;
+	var l = lr[off] ^ this.P[0];
 	var r = lr[off + 1];
+	var S = this.S;
 
-	l ^= this.P[0];
-	for (i = 0; i <= this.BLOWFISH_NUM_ROUNDS - 2;) {
+	while(j <= 14) {
 		// Feistel substitution on left word
-		n = this.S[(l >> 24) & 0xff];
-		n += this.S[0x100 | ((l >> 16) & 0xff)];
-		n ^= this.S[0x200 | ((l >> 8) & 0xff)];
-		n += this.S[0x300 | (l & 0xff)];
-		r ^= n ^ this.P[++i];
+		r ^= ((S[(l >> 24) & 0xff]
+		     + S[0x100 | ((l >> 16) & 0xff)]
+		     ^ S[0x200 | ((l >> 8) & 0xff)])
+		     + S[0x300 | (l & 0xff)])
+		     ^ this.P[++j];
 
 		// Feistel substitution on right word
-		n = this.S[(r >> 24) & 0xff];
-		n += this.S[0x100 | ((r >> 16) & 0xff)];
-		n ^= this.S[0x200 | ((r >> 8) & 0xff)];
-		n += this.S[0x300 | (r & 0xff)];
-		l ^= n ^ this.P[++i];
+		l ^= ((S[(r >> 24) & 0xff]
+		     + S[0x100 | ((r >> 16) & 0xff)]
+		     ^ S[0x200 | ((r >> 8) & 0xff)])
+		     + S[0x300 | (r & 0xff)])
+		     ^ this.P[++j];
 	}
-	lr[off] = r ^ this.P[this.BLOWFISH_NUM_ROUNDS + 1];
+	lr[off] = r ^ this.P[17];
 	lr[off + 1] = l;
-};
-bCrypt.prototype.streamtoword = function(data, offp) {
+},
+
+streamtoword: function(data, offp) {
 	var i;
 	var word = 0;
 	var off = offp;
@@ -360,37 +299,78 @@ bCrypt.prototype.streamtoword = function(data, offp) {
 	}
 	this.offp = off;
 	return word;
-};
-bCrypt.prototype.init_key = function() {
-	this.P = this.P_orig.slice();
-	this.S = this.S_orig.slice();
-};
-bCrypt.prototype.key = function(key) {
-	var i;
+},
+
+key: function(key) {
+	var j,i,t,l=0,r=0;
+	var koffp = new Array(0);
 	this.offp = 0;
-	var lr = new Array(0x00000000, 0x00000000);
 	var plen = this.P.length;
 	var slen = this.S.length;
+	var S = this.S;
 
 	for (i = 0; i < plen; i++) {
 		this.P[i] = this.P[i] ^ this.streamtoword(key, this.offp);
 	}
 	for (i = 0; i < plen; i += 2) {
-		this.encipher(lr, 0);
-		this.P[i] = lr[0];
-		this.P[i + 1] = lr[1];
+		j = 0;
+		l ^= this.P[0];
+
+		while(j <= 14) { /*this.BLOWFISH_NUM_ROUNDS - 2*/
+			// Feistel substitution on left word
+			r ^= ((S[(l >> 24) & 0xff]
+			     + S[0x100 | ((l >> 16) & 0xff)]
+			     ^ S[0x200 | ((l >> 8) & 0xff)])
+			     + S[0x300 | (l & 0xff)])
+			     ^ this.P[++j];
+
+			// Feistel substitution on right word
+			l ^= ((S[(r >> 24) & 0xff]
+			     + S[0x100 | ((r >> 16) & 0xff)]
+			     ^ S[0x200 | ((r >> 8) & 0xff)])
+			     + S[0x300 | (r & 0xff)])
+			     ^ this.P[++j];
+		}
+		t = l;
+		l = r ^ this.P[17]; //this.BLOWFISH_NUM_ROUNDS + 1
+		r = t;
+
+		this.P[i] = l;
+		this.P[i + 1] = r;
 	}
 
 	for (i = 0; i < slen; i += 2) {
-		this.encipher(lr, 0);
-		this.S[i] = lr[0];
-		this.S[i + 1] = lr[1];
+		j = 0;
+		l ^= this.P[0];
+
+		while(j <= 14) {
+			// Feistel substitution on left word
+			r ^= ((S[(l >> 24) & 0xff]
+			     + S[0x100 | ((l >> 16) & 0xff)]
+			     ^ S[0x200 | ((l >> 8) & 0xff)])
+			     + S[0x300 | (l & 0xff)])
+			     ^ this.P[++j];
+
+			// Feistel substitution on right word
+			l ^= ((S[(r >> 24) & 0xff]
+			     + S[0x100 | ((r >> 16) & 0xff)]
+			     ^ S[0x200 | ((r >> 8) & 0xff)])
+			     + S[0x300 | (r & 0xff)])
+			     ^ this.P[++j];
+		}
+		t = l;
+		l = r ^ this.P[17];
+		r = t;
+
+		this.S[i] = l;
+		this.S[i + 1] = r;
 	}
-};
-bCrypt.prototype.ekskey = function(data, key) {
+},
+ekskey: function(data, key) {
 	var i;
+	var koffp = new Array(0);
+	var lr = new Array(0, 0);
 	this.offp = 0;
-	var lr = new Array(0x00000000, 0x00000000);
 	var plen = this.P.length;
 	var slen = this.S.length;
 
@@ -411,136 +391,42 @@ bCrypt.prototype.ekskey = function(data, key) {
 		this.S[i] = lr[0];
 		this.S[i + 1] = lr[1];
 	}
-};
-
-bCrypt.prototype.crypt_raw = function(password, salt, log_rounds, callback, progress) {
+},
+crypt_raw: function(password, salt, log_rounds) {
 	var rounds;
+	var ret=[];
+	var i;
 	var j;
 	var cdata = this.bf_crypt_ciphertext.slice();
 	var clen = cdata.length;
-	var one_percent;
 
 	if (log_rounds < 4 || log_rounds > 31)
 		throw "Bad number of rounds";
-	if (salt.length != this.BCRYPT_SALT_LEN)
-		throw "Bad salt length";
+	if (salt.length != 16)
+		throw "Bad salt length " + salt.length;
 
-	rounds = 1 << log_rounds;
-	one_percent = Math.floor(rounds / 100) + 1;
-	this.init_key();
+	rounds = 1 << log_rounds; alert(rounds);
+	this.P = this.P_orig.slice();
+	this.S = this.S_orig.slice();
 	this.ekskey(salt, password);
-
-	var obj = this;
-	var i = 0;
-	setTimeout(function(){
-		if(i < rounds){
-			var start = new Date();
-			for (; i < rounds;) {
-				i = i + 1;
-				obj.key(password);
-				obj.key(salt);
-		                if(i % one_percent == 0){
-					progress();
-				}
-		                if((new Date() - start) > obj.MAX_EXECUTION_TIME){
-					break;
-		                }
-			}
-		        setTimeout(arguments.callee, 0);
-		}else{
-			for (i = 0; i < 64; i++) {
-				for (j = 0; j < (clen >> 1); j++) {
-					obj.encipher(cdata, j << 1);
-				}
-			}
-			var ret = [];
-		        for (i = 0; i < clen; i++) {
-				ret.push(obj.getByte((cdata[i] >> 24) & 0xff));
-				ret.push(obj.getByte((cdata[i] >> 16) & 0xff));
-				ret.push(obj.getByte((cdata[i] >> 8) & 0xff));
-				ret.push(obj.getByte(cdata[i] & 0xff));
-			}
-			callback(ret);
-		}
-	}, 0);
-};
-/*
- * callback: a function that will be passed the hash when it is complete
- * progress: optional - this function will be called every time 1% of hashing
- *      is complete.
- */
-bCrypt.prototype.hashpw = function(password, salt, callback, progress) {
-	var real_salt;
-	var passwordb = [];
-	var saltb = [];
-	var hashed = [];
-	var minor = String.fromCharCode(0);
-	var rounds = 0;
-	var off = 0;
-
-	if (!progress){
-	        var progress = function() {};
+	for (i = 0; i < rounds; i++) {
+		this.key(password);
+		this.key(salt);
 	}
 
-	if (salt.charAt(0) != '$' || salt.charAt(1) != '2')
-		throw "Invalid salt version";
-	if (salt.charAt(2) == '$')
-		off = 3;
-	else {
-		minor = salt.charAt(2);
-		if (minor != 'a' || salt.charAt(3) != '$')
-			throw "Invalid salt revision";
-		off = 4;
+	for (i = 0; i < 64; i++) {
+		for (j = 0; j < (clen >> 1); j++)
+			this.encipher(cdata, j << 1);
 	}
 
-	// Extract number of rounds
-	if (salt.charAt(off + 2) > '$')
-		throw "Missing salt rounds";
-	var r1 = parseInt(salt.substring(off, off + 1)) * 10;
-	var r2 = parseInt(salt.substring(off + 1, off + 2));
-	rounds = r1 + r2;
-	real_salt = salt.substring(off + 3, off + 25);
-	password = password + (minor >= 'a' ? "\000" : "");
-	for (var r = 0; r < password.length; r++) {
-		passwordb.push(this.getByte(password.charAt(r)));
+	for (i = 0, j = 0; i < clen; i++) {
+		ret[j++] = ((cdata[i] >> 24) & 0xff);
+		ret[j++] = ((cdata[i] >> 16) & 0xff);
+		ret[j++] = ((cdata[i] >> 8) & 0xff);
+		ret[j++] = (cdata[i] & 0xff);
 	}
-	saltb = this.decode_base64(real_salt, this.BCRYPT_SALT_LEN);
-	var obj = this;
-	this.crypt_raw(passwordb, saltb, rounds, function(hashed) {
-		var rs = [];
-	        rs.push("$2");
-	        if (minor >= 'a')
-			rs.push(minor);
-		rs.push("$");
-		if (rounds < 10)
-			rs.push("0");
-		rs.push(rounds.toString());
-	        rs.push("$");
-	        rs.push(obj.encode_base64(saltb, saltb.length));
-	        rs.push(obj.encode_base64(hashed, obj.bf_crypt_ciphertext.length * 4 - 1));
-	        callback(rs.join(''));
-	}, progress);
-};
-
-bCrypt.prototype.gensalt = function(rounds) {
-	var iteration_count = rounds;
-	if (iteration_count < 4 || iteration_count > 31) {
-		iteration_count = this.GENSALT_DEFAULT_LOG2_ROUNDS;
-	}
-	var output = [];
-	output.push("$2a$");
-	if (iteration_count < 10)
-		output.push("0");
-	output.push(iteration_count.toString());
-	output.push('$');
-	var s1 = [];
-	for (var r = 0; r < this.BCRYPT_SALT_LEN; r++){
-		s1.push(Math.abs(isaac.rand()));
-	}
-	output.push(this.encode_base64(s1,this.BCRYPT_SALT_LEN))
-	return output.join('');
-};
-
-bCrypt.prototype.ready = function(){
-	return true;
-};
+	return ret;
+},
+hashq: function(password, saltb, rounds) {
+	return this.encode_base64(this.crypt_raw(this.stringToBytes(password + "\000"), saltb, rounds), this.bf_crypt_ciphertext.length * 4 - 1);
+}};
