@@ -222,13 +222,13 @@ function hashq(password, saltb, rounds) {
         cdata = new Uint32Array([0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253, 0x63727944, 0x6f756274]),
         off = 0;
 
-    function key(key) {
-        var j, i, t, l = 0,
+    function key(key, keylength) {
+        var j = 0, i = 0, t = 0, l = 0,
             r = 0;
         off = 0;
 
-        for (i = 0; i < 18/*P.length*/; i++) {
-            P[i] = P[i] ^ streamtoword(key);
+        for (; i < 18/*P.length*/; i++) {
+            P[i] = P[i] ^ streamtoword(key, keylength);
         }
         for (i = 0; i < 18/*P.length*/; i += 2) {
             j = 0;
@@ -307,18 +307,18 @@ function hashq(password, saltb, rounds) {
         off = 0;
 
         for (i = 0; i < 18/*P.length*/; i++)
-            P[i] = P[i] ^ streamtoword(key);
+            P[i] = P[i] ^ streamtoword(key, key.length);
         off = 0;
         for (i = 0; i < 18/*P.length*/; i += 2) {
-            lr[0] ^= streamtoword(data);
-            lr[1] ^= streamtoword(data);
+            lr[0] ^= streamtoword(data, data.length);
+            lr[1] ^= streamtoword(data, data.length);
             encipher(lr, 0);
             P[i] = lr[0];
             P[i + 1] = lr[1];
         }
         for (i = 0; i < 1024/*S.length*/; i += 2) {
-            lr[0] ^= streamtoword(data);
-            lr[1] ^= streamtoword(data);
+            lr[0] ^= streamtoword(data, data.length);
+            lr[1] ^= streamtoword(data, data.length);
             encipher(lr, 0);
             S[i] = lr[0];
             S[i + 1] = lr[1];
@@ -340,9 +340,11 @@ function hashq(password, saltb, rounds) {
 
         rounds = 1 << log_rounds;
         ekskey(salt, password);
+        var passwordlength = password.length;
+        var saltlength = salt.length;
         for (i = 0; i < rounds; i++) {
-            key(password);
-            key(salt);
+            key(password, passwordlength);
+            key(salt, saltlength);
         }
 
         for (i = 0; i < 64; i++) {
@@ -359,12 +361,12 @@ function hashq(password, saltb, rounds) {
         return ret;
     }
 
-    function streamtoword(data) {
+    function streamtoword(data, datalength) {
         var i;
         var word = 0;
         for (i = 0; i < 4; i++) {
             word = (word << 8) | (data[off] & 0xff);
-            off = (off + 1) % data.length;
+            off = (off + 1) % datalength;
         }
         return word;
     }
