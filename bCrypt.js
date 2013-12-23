@@ -1,10 +1,12 @@
 function hashq(password, saltb, rounds) {
 
-    var P = [0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822,
+    var P = new Uint32Array(
+            [0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822,
              0x299f31d0, 0x082efa98, 0xec4e6c89, 0x452821e6, 0x38d01377,
              0xbe5466cf, 0x34e90c6c, 0xc0ac29b7, 0xc97c50dd, 0x3f84d5b5,
-             0xb5470917, 0x9216d5d9, 0x8979fb1b],
-        S = [0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7, 0xb8e1afed,
+             0xb5470917, 0x9216d5d9, 0x8979fb1b]),
+        S = new Uint32Array(
+            [0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7, 0xb8e1afed,
              0x6a267e96, 0xba7c9045, 0xf12c7f99, 0x24a19947, 0xb3916cf7,
              0x0801f2e2, 0x858efc16, 0x636920d8, 0x71574e69, 0xa458fea3,
              0xf4933d7e, 0x0d95748f, 0x728eb658, 0x718bcd58, 0x82154aee,
@@ -208,7 +210,7 @@ function hashq(password, saltb, rounds) {
              0xf746ce76, 0x77afa1c5, 0x20756060, 0x85cbfe4e, 0x8ae88dd8,
              0x7aaaf9b0, 0x4cf9aa7e, 0x1948c25c, 0x02fb8a8c, 0x01c36ae4,
              0xd6ebe1f9, 0x90d4f869, 0xa65cdea0, 0x3f09252d, 0xc208e69f,
-             0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6],
+             0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6]),
 
         base64_code = ['.', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 			      'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
@@ -217,7 +219,7 @@ function hashq(password, saltb, rounds) {
 			      'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 			      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
 
-        cdata = [0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253, 0x63727944, 0x6f756274],
+        cdata = new Uint32Array([0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253, 0x63727944, 0x6f756274]),
         off, plen = P.length,
         slen = S.length;
 
@@ -302,7 +304,7 @@ function hashq(password, saltb, rounds) {
 
     function ekskey(data, key) {
         var i;
-        var lr = [0, 0];
+        var lr = new Uint32Array(2);
         off = 0;
 
         for (i = 0; i < plen; i++)
@@ -333,6 +335,9 @@ function hashq(password, saltb, rounds) {
 
         if (log_rounds < 4 || log_rounds > 31) throw "Bad number of rounds";
         if (salt.length != 16) throw "Bad salt length " + salt.length;
+
+        salt = new Uint8Array(salt);
+        password = new Uint8Array(password);
 
         rounds = 1 << log_rounds;
         ekskey(salt, password);
