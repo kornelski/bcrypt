@@ -220,18 +220,17 @@ function hashq(password, saltb, rounds) {
 			      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
 
         cdata = new Uint32Array([0x4f727068, 0x65616e42, 0x65686f6c, 0x64657253, 0x63727944, 0x6f756274]),
-        off, plen = P.length,
-        slen = S.length;
+        off = 0;
 
     function key(key) {
         var j, i, t, l = 0,
             r = 0;
         off = 0;
 
-        for (i = 0; i < plen; i++) {
+        for (i = 0; i < 18/*P.length*/; i++) {
             P[i] = P[i] ^ streamtoword(key);
         }
-        for (i = 0; i < plen; i += 2) {
+        for (i = 0; i < 18/*P.length*/; i += 2) {
             j = 0;
             l ^= P[0];
 
@@ -250,7 +249,7 @@ function hashq(password, saltb, rounds) {
             P[i + 1] = r;
         }
 
-        for (i = 0; i < slen; i += 2) {
+        for (i = 0; i < 1024/*S.length*/; i += 2) {
             j = 0;
             l ^= P[0];
 
@@ -307,17 +306,17 @@ function hashq(password, saltb, rounds) {
         var lr = new Uint32Array(2);
         off = 0;
 
-        for (i = 0; i < plen; i++)
+        for (i = 0; i < 18/*P.length*/; i++)
             P[i] = P[i] ^ streamtoword(key);
         off = 0;
-        for (i = 0; i < plen; i += 2) {
+        for (i = 0; i < 18/*P.length*/; i += 2) {
             lr[0] ^= streamtoword(data);
             lr[1] ^= streamtoword(data);
             encipher(lr, 0);
             P[i] = lr[0];
             P[i + 1] = lr[1];
         }
-        for (i = 0; i < slen; i += 2) {
+        for (i = 0; i < 1024/*S.length*/; i += 2) {
             lr[0] ^= streamtoword(data);
             lr[1] ^= streamtoword(data);
             encipher(lr, 0);
