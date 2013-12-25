@@ -1,0 +1,20 @@
+<html>
+<head>
+<script src="bCrypt.js" type="text/javascript"></script>
+</head>
+<script type="text/javascript">
+window.onload = function()
+{
+    var start = Date.now();
+	var hash = hashq("test", [0x55,0xad,0x7a,0x95,0x85,0x41,0x4a,0xed,0x19,0xf6,0xeb,0x19,0x2a,0x8d,0x4d,0x6e], 12);
+
+	var time = Date.now() - start;
+    if (hash !== "SZ35tWxM.M.3RGGV43twvBujWdnFupe") {
+        alert("You broke it!");
+    } else {
+	alert(time + "ms");
+    }
+}
+</script>
+</body>
+</html>
