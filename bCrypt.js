@@ -362,12 +362,18 @@ function hashq(password, saltb, rounds) {
     }
 
     function streamtoword(data, datalength) {
-        var i;
-        var word = 0;
-        for (i = 0; i < 4; i++) {
-            word = (word << 8) | (data[off] & 0xff);
-            off = (off + 1) % datalength;
-        }
+        var o = off;
+
+        var word = (data[off] & 0xff);
+        o = (o + 1) % datalength;
+        word = (word << 8) | (data[o] & 0xff);
+        o = (o + 1) % datalength;
+        word = (word << 8) | (data[o] & 0xff);
+        o = (o + 1) % datalength;
+        word = (word << 8) | (data[o] & 0xff);
+        o = (o + 1) % datalength;
+
+        off = o;
         return word;
     }
 
